@@ -1,17 +1,29 @@
 package org.example;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Scanner;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 class Tasks {
     private ArrayList<String> taskList = new ArrayList<>();
     private ArrayList<String> taskListInProgress = new ArrayList<>();
     private ArrayList<String> taskListDone = new ArrayList<>();
+    private static int idCounter = 0;
+    private int id;
+
+
+    public void setTaskListDone(ArrayList<String> taskListDone) {
+        this.taskListDone = taskListDone;
+    }
+    public void setTaskListInProgress(ArrayList<String> taskListInProgress) {
+        this.taskListInProgress = taskListInProgress;
+    }
+    public void setTaskList(ArrayList<String> taskList) {
+        this.taskList = taskList;
+    }
 
     public ArrayList<String> getTaskList() {
         return taskList;
@@ -25,32 +37,40 @@ class Tasks {
         return taskListDone;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public String getUpdateTime() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(formatter);
+    }
+
     public void addTask(String input) {
-        taskList.add(input);
+        this.id = ++idCounter;
+        taskList.add("ID: " + id + ". " + input + ". Last update: " + getUpdateTime());
     }
 
     public void taskUpdater(int index, String input) {
-        for (String task : taskList) {
-            int keyIndex = task.indexOf(".");
-            for (char elem : task.toCharArray()) {
-                if (task.contains(Integer.toString(index))) {
-                    if (Character.getNumericValue(elem) == index) {
-                        String partToReplace = task.substring(keyIndex + 2);
-                        String replacedTask = task.replace(partToReplace, input);
-                        taskList.set(taskList.indexOf(task), replacedTask);
-                    }
-                } else {
-                    for (String taskProgress : taskListInProgress) {
-                        if (taskProgress.contains(Integer.toString(index))) {
-                            String partToReplace = taskProgress.substring(keyIndex + 2);
-                            String replacedTask = taskProgress.replace(partToReplace, input);
-                            taskListInProgress.set(taskListInProgress.indexOf(taskProgress), replacedTask);
-                        }
-                    }
-                }
+        for (int i = 0; i < taskList.size(); i++) {
+            String task = taskList.get(i);
+            if (task.contains("ID: " + index)) {
+                String updatedTask = "ID: " + index + ". " + input + ". Last update: " + getUpdateTime();
+                taskList.set(i, updatedTask);
+                break;
+            }
+        }
+        for (int i = 0; i < taskListInProgress.size(); i++) {
+            String taskProgress = taskListInProgress.get(i);
+            if (taskProgress.contains("ID: " + index)) {
+                String updatedTask = "ID: " + index + ". " + input + ". Last update: " + getUpdateTime();
+                taskListInProgress.set(i, updatedTask);
+                break;
             }
         }
     }
+
     public void taskMarker(int index, String command) {
         Iterator<String> iteratorList = taskList.iterator();
         Iterator<String> iteratorInProgress = taskListInProgress.iterator();
@@ -58,85 +78,68 @@ class Tasks {
 
         if (command.equalsIgnoreCase("mark in progress")) {
             for (String taskProgress : taskListInProgress) {
-                for (char elemOfProgress : taskProgress.toCharArray()) {
-                    if (Character.getNumericValue(elemOfProgress) == index) {
-                        System.out.println("Task already in progress.");
-                        break;
-                    }
+                if (taskProgress.contains("ID: " + index)) {
+                    System.out.println("Task already in progress.");
+                    break;
                 }
             }
             while (iteratorList.hasNext()) {
                 String task = iteratorList.next();
-                for (char elem : task.toCharArray()) {
-                    if (Character.getNumericValue(elem) == index) {
-                        iteratorList.remove();
-                        taskListInProgress.add(task);
-                        break;
-                    }
+                if (task.contains("ID: " + index)) {
+                    iteratorList.remove();
+                    taskListInProgress.add(task);
+                    break;
                 }
             }
         } else if (command.equalsIgnoreCase("mark done")) {
             for (String taskDone : taskListDone) {
-                for (char elemOfDone : taskDone.toCharArray()) {
-                    if (Character.getNumericValue(elemOfDone) == index) {
-                        System.out.println("Task already done.");
-                        break;
-                    }
+                if (taskDone.contains("ID: " + index)) {
+                    System.out.println("Task already done.");
+                    break;
                 }
             }
             while (iteratorList.hasNext()) {
                 String task = iteratorList.next();
-                for (char elem : task.toCharArray()) {
-                    if (Character.getNumericValue(elem) == index) {
-                        iteratorList.remove();
-                        taskListDone.add(task);
-                        break;
-                    }
+                if (task.contains("ID: " + index)) {
+                    iteratorList.remove();
+                    taskListDone.add(task);
+                    break;
                 }
             }
             while (iteratorInProgress.hasNext()) {
                 String taskProgress = iteratorInProgress.next();
-                for (char elemOfProgress : taskProgress.toCharArray()) {
-                    if (Character.getNumericValue(elemOfProgress) == index) {
-                        iteratorInProgress.remove();
-                        taskListDone.add(taskProgress);
-                        break;
-                    }
+                if (taskProgress.contains("ID: " + index)) {
+                    iteratorInProgress.remove();
+                    taskListDone.add(taskProgress);
+                    break;
                 }
             }
         } else if (command.equalsIgnoreCase("delete")) {
             while (iteratorDone.hasNext()) {
                 String taskDone = iteratorDone.next();
-                for (char elemOfDone : taskDone.toCharArray()) {
-                    if (Character.getNumericValue(elemOfDone) == index) {
-                        iteratorDone.remove();
-                        break;
-                    }
+                if (taskDone.contains("ID: " + index)) {
+                    iteratorDone.remove();
+                    break;
                 }
             }
             while (iteratorList.hasNext()) {
                 String task = iteratorList.next();
-                for (char elem : task.toCharArray()) {
-                    if (Character.getNumericValue(elem) == index) {
-                        iteratorList.remove();
-                        break;
-                    }
+                if (task.contains("ID: " + index)) {
+                    iteratorList.remove();
+                    break;
                 }
             }
             while (iteratorInProgress.hasNext()) {
                 String taskProgress = iteratorInProgress.next();
-                for (char elemOfProgress : taskProgress.toCharArray()) {
-                    if (Character.getNumericValue(elemOfProgress) == index) {
-                        iteratorInProgress.remove();
-                        break;
-                    }
+                if (taskProgress.contains("ID: " + index)) {
+                    iteratorInProgress.remove();
+                    break;
                 }
             }
         }
     }
 }
 class Choice {
-    private int taskID = 0;
     public void switcher(Tasks tasksFolder) {
 
         System.out.println("This is task list.");
@@ -150,14 +153,10 @@ class Choice {
             } else {
                 switch (commandInput.toLowerCase().trim()) {
                     case "add" :
-                        if (tasksFolder.getTaskList().isEmpty()) {
-                            taskID = 0;
-                        }
                         System.out.println("Type in the task: ");
                         String taskToAdd = sc.nextLine();
-                        ++ taskID;
-                        tasksFolder.addTask("ID: " + taskID + ". " + taskToAdd);
-                        System.out.println("Task added successfully. (id: " + taskID + ")");
+                        tasksFolder.addTask(taskToAdd);
+                        System.out.println("Task added successfully. (id: " + tasksFolder.getId() + ")");
                         break;
                     case "update" :
                         System.out.println("Type in the task number: ");
@@ -252,9 +251,9 @@ class Choice {
 class FileSaver {
     public void saveTasks(Tasks tasksFolder, String fileName) {
         Map<String, Object> prettyList = new HashMap<>();
-        prettyList.put("To-do tasks", tasksFolder.getTaskList());
-        prettyList.put("In progress", tasksFolder.getTaskListInProgress());
-        prettyList.put("Done", tasksFolder.getTaskListDone());
+        prettyList.put("taskList", tasksFolder.getTaskList());
+        prettyList.put("taskListInProgress", tasksFolder.getTaskListInProgress());
+        prettyList.put("taskListDone", tasksFolder.getTaskListDone());
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -270,10 +269,23 @@ class FileSaver {
 class taskTracker {
     public static void main(String[] args) {
         FileSaver fileSaver = new FileSaver();
-        Tasks tasksFolder = new Tasks();
+        Tasks tasksFolder = null;
         Choice choice = new Choice();
-        choice.switcher(tasksFolder);
         String fileName = "tasks.json";
-        fileSaver.saveTasks(tasksFolder, fileName);
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            tasksFolder = objectMapper.readValue(new File(fileName), Tasks.class);
+            System.out.println("Task been read from " + fileName);
+        } catch (IOException e) {
+            System.out.println("Error reading: " + e.getMessage());
+            tasksFolder = new Tasks();
+            System.out.println("File has been created automatically.");
+        }
+        if (tasksFolder != null) {
+            choice.switcher(tasksFolder);
+            fileSaver.saveTasks(tasksFolder, fileName);
+        } else {
+            System.out.println("No tasks to process.");
+        }
     }
 }
