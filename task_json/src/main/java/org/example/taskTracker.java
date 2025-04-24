@@ -242,7 +242,7 @@ class taskTracker {
     final static String fileName = "tasks.json";
     public static void main(String[] args) {
         FileSaver fileSaver = new FileSaver();
-        Tasks tasksFolder = null;
+        Tasks tasksFolder;
         Choice choice = new Choice();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
