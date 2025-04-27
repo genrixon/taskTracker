@@ -12,3 +12,4 @@ A simple command-line interface (CLI) task tracker developed in Java. This appli
 2. Create a folder anywhere on your computer and put ther file there.
 3. Open CMD and find the folder you created.
 4. Run the file using java -jar task_json.jar
+project URL https://roadmap.sh/projects/task-tracker
